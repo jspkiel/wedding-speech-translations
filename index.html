@@ -92,7 +92,7 @@
     for (const id in speeches) {
       const btn = document.createElement("button");
       btn.textContent = speeches[id].title || id;
-      btn.onclick = () => set(currentSpeechRef, id);
+      btn.onclick = () => {if (isAdmin) {set(currentSpeechRef, id)}};
       selectorDiv.appendChild(btn);
     }
   }
