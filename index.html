@@ -23,6 +23,13 @@
       padding: 0.5em 1.5em;
       margin-top: 2em;
     }
+    #loginForm {
+      margin-top: 2em;
+    }
+    input {
+      padding: 0.5em;
+      margin: 0.3em;
+    }
   </style>
 </head>
 <body>
@@ -33,9 +40,16 @@
     <div class="lang" id="gr"></div>
   </div>
 
-  <button onclick="nextSegment()">Next Segment</button>
+  <button id="nextBtn" onclick="nextSegment()" style="display:none;">Next Segment</button>
 
-  <script type="module">
+  <div id="loginForm">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="logout()" style="display:none;" id="logoutBtn">Logout</button>
+  </div>
+
+    <script type="module">
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
   // TODO: Add SDKs for Firebase products that you want to use
@@ -54,6 +68,8 @@
 
   // Initialize Firebase
   const db = initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
 
     const currentRef = db.ref("currentIndex");
     const segmentsRef = db.ref("segments");
@@ -80,6 +96,37 @@
         currentRef.set(current + 1);
       });
     }
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          document.getElementById("nextBtn").style.display = "inline-block";
+          document.getElementById("logoutBtn").style.display = "inline-block";
+        })
+        .catch(error => {
+          alert("Login failed: " + error.message);
+        });
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        document.getElementById("nextBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "none";
+      });
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("nextBtn").style.display = "inline-block";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+      } else {
+        document.getElementById("nextBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "none";
+      }
+    });
   </script>
 </body>
 </html>
