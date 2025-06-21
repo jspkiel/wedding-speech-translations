@@ -83,7 +83,7 @@
 
   const speechesRef = ref(db, "speeches");
   const currentSpeechRef = ref(db, "currentSpeech");
-  const currentIndexRef = ref(db, `speeches/${currentSpeechId}/currentIndex`);
+  // const currentIndexRef = ref(db, `speeches/${currentSpeechId}/currentIndex`);
 
   const translationsDiv = document.getElementById("translations");
   const selectorDiv = document.getElementById("speechSelector");
@@ -138,7 +138,19 @@
       if (isAdmin) {
         const setBtn = document.createElement("button");
         setBtn.textContent = "Set as current";
-        setBtn.onclick = () => set(currentIndexRef, index);
+        setBtn.onclick = () => {
+          if (!currentSpeechId) return;
+  const currentIndexRef = ref(db, `speeches/${currentSpeechId}/currentIndex`);
+  set(currentIndexRef, index)
+    .then(() => {
+      console.log(`Set currentIndex to ${index} for speech ${currentSpeechId}`);
+    })
+    .catch(error => {
+      console.error("Error setting currentIndex:", error);
+    });
+          
+          set(currentIndexRef, index);
+        }
         segDiv.appendChild(setBtn);
       }
 
@@ -156,13 +168,30 @@
   // Firebase listeners
   onValue(currentSpeechRef, (snapshot) => {
     currentSpeechId = snapshot.val();
+    listenCurrentIndex()
     renderSegments();
   });
 
-  onValue(currentIndexRef, (snapshot) => {
+    function listenCurrentIndex() {
+  
+  const currentIndexRef = ref(db, `speeches/${currentSpeechId}/currentIndex`);
+  
+  // Detach previous listener if any
+  if (window.currentIndexUnsubscribe) {
+    window.currentIndexUnsubscribe();
+  }
+  
+  // Attach new listener
+  window.currentIndexUnsubscribe = onValue(currentIndexRef, snapshot => {
     currentIndex = snapshot.val();
     renderSegments();
   });
+}
+
+  // onValue(currentIndexRef, (snapshot) => {
+  //   currentIndex = snapshot.val();
+  //   renderSegments();
+  // });
 
   get(speechesRef).then(snapshot => {
     speeches = snapshot.val() || {};
