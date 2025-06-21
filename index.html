@@ -103,6 +103,7 @@
 
     function renderSpeechSelector() {
       const selector = document.getElementById("speechSelector");
+      console.log("Speeches:", speeches);
       selector.innerHTML = "";
       for (const id in speeches) {
         const btn = document.createElement("button");
