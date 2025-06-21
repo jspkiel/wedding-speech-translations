@@ -1,4 +1,55 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wedding Speech Translations</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+      background: #fdfaf6;
+    }
+    .segment {
+      font-size: 1.5em;
+      margin-bottom: 2em;
+    }
+    .lang {
+      margin: 1em 0;
+    }
+    button {
+      font-size: 1em;
+      padding: 0.5em 1.5em;
+      margin-top: 2em;
+    }
+    #loginForm {
+      margin-top: 2em;
+    }
+    input {
+      padding: 0.5em;
+      margin: 0.3em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Wedding Speech Translations</h1>
+  <div class="segment" id="translations">
+    <div class="lang" id="en"></div>
+    <div class="lang" id="fr"></div>
+    <div class="lang" id="gr"></div>
+  </div>
+
+  <button id="nextBtn" onclick="nextSegment()" style="display:none;">Next Segment</button>
+
+  <div id="loginForm">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="logout()" style="display:none;" id="logoutBtn">Logout</button>
+  </div>
+
+    <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
   import { getDatabase, ref, get, onValue, set } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
@@ -75,3 +126,6 @@
     }
   });
 </script>
+
+</body>
+</html>
