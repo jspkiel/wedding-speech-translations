@@ -177,6 +177,7 @@
   // Attach new listener
   window.currentIndexUnsubscribe = onValue(currentIndexRef, snapshot => {
     currentIndexUpdated = snapshot.val();
+    renderSegments(); 
   });
 }
 
