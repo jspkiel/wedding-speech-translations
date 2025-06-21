@@ -48,6 +48,28 @@
   border: 2px solid #ffaa00;
   font-weight: bold;
 }
+    #goToCurrentBtn {
+  position: fixed;
+  bottom: 1em;
+  right: 1em;
+  background-color: #ffaa00;
+  color: #000;
+  border: none;
+  padding: 0.8em 1.2em;
+  font-size: 1em;
+  font-weight: bold;
+  border-radius: 999px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 999;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+#goToCurrentBtn:hover {
+  background-color: #ffcc33;
+  transform: scale(1.05);
+}
+
   </style>
 </head>
 <body>
@@ -101,7 +123,12 @@
     if (id === currentSpeechId) {
       btn.classList.add("active-speech-btn");
     }
-      btn.onclick = () => {if (isAdmin) {set(currentSpeechRef, id)}else{currentSpeechId=id; updateSpeech()}};
+      btn.onclick = () => {if (isAdmin) {
+        set(currentSpeechRef, id)}else{
+        currentSpeechId=id; 
+        renderSpeechSelector;
+        updateSpeech()
+      }};
       selectorDiv.appendChild(btn);
     }
   }
@@ -166,12 +193,23 @@
       translationsDiv.appendChild(segDiv);
     });
 
-    const goToBtn = document.createElement("button");
-    goToBtn.textContent = "Go to current";
-    goToBtn.onclick = () => {
-      document.querySelector(".current")?.scrollIntoView({ behavior: "smooth" });
-    };
-    translationsDiv.appendChild(goToBtn);
+    let goToBtn = document.getElementById("goToCurrentBtn");
+
+if (!goToBtn) {
+  goToBtn = document.createElement("button");
+  goToBtn.id = "goToCurrentBtn";
+  document.body.appendChild(goToBtn);
+}
+
+goToBtn.textContent = "🔽 Jump to Current Segment";
+goToBtn.onclick = () => {
+  document.querySelector(".highlight")?.scrollIntoView({ behavior: "smooth", block: "center" });
+};
+
+
+    
+
+   
   }
 
     const listenCurrentIndex = () => {
