@@ -30,6 +30,13 @@
       padding: 0.5em;
       margin: 0.3em;
     }
+    .highlight {
+  background: #fff9c4;
+  border-radius: 10px;
+  padding: 1em;
+  box-shadow: 0 0 10px #e0d97a;
+}
+
   </style>
 </head>
 <body>
@@ -64,7 +71,6 @@
     appId: "1:843999607139:web:cf812e65677e1d3eea3b56"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const auth = getAuth(app);
@@ -74,24 +80,56 @@
 
   let segments = [];
 
+  // Render all segments
+  function renderSegments(currentIndex) {
+    const container = document.getElementById("translations");
+    container.innerHTML = "";
+
+    segments.forEach((s, i) => {
+      const segmentDiv = document.createElement("div");
+      segmentDiv.className = "segment";
+      segmentDiv.id = "segment-" + i;
+
+      if (i === currentIndex) {
+        segmentDiv.classList.add("highlight");
+      }
+
+      segmentDiv.innerHTML = `
+        <div class="lang">🇬🇧 ${s.en}</div>
+        <div class="lang">🇫🇷 ${s.fr}</div>
+        <div class="lang">🇬🇷 ${s.gr}</div>
+      `;
+
+      container.appendChild(segmentDiv);
+    });
+  }
+
   get(segmentsRef).then(snapshot => {
     segments = snapshot.val();
-  });
+    get(currentRef).then(indexSnap => {
+      renderSegments(indexSnap.val());
+    });
 
-  onValue(currentRef, snapshot => {
-    const index = snapshot.val();
-    if (segments.length > index) {
-      const s = segments[index];
-      document.getElementById("en").textContent = "🇬🇧 " + s.en;
-      document.getElementById("fr").textContent = "🇫🇷 " + s.fr;
-      document.getElementById("gr").textContent = "🇬🇷 " + s.gr;
-    }
+    onValue(currentRef, snapshot => {
+      const index = snapshot.val();
+      renderSegments(index);
+    });
   });
 
   window.nextSegment = function () {
     get(currentRef).then(snapshot => {
       const current = snapshot.val();
       set(currentRef, current + 1);
+    });
+  };
+
+  window.goToCurrent = function () {
+    get(currentRef).then(snapshot => {
+      const current = snapshot.val();
+      const el = document.getElementById("segment-" + current);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     });
   };
 
@@ -127,5 +165,6 @@
   });
 </script>
 
+<button onclick="goToCurrent()">Go to Current Segment</button>
 </body>
 </html>
