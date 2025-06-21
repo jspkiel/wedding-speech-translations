@@ -102,7 +102,6 @@
     translationsDiv.innerHTML = "";
     if (!currentSpeechId || !speeches[currentSpeechId]) return;
 
-    const segments = speeches[currentSpeechId].segments || [];
     const { segments, currentIndex } = speeches[currentSpeechId];
     (segments || []).forEach((seg, index) => {
       const segDiv = document.createElement("div");
