@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wedding Speech Translations</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+      background: #fdfaf6;
+    }
+    .segment {
+      font-size: 1.5em;
+      margin-bottom: 2em;
+    }
+    .lang {
+      margin: 1em 0;
+    }
+    button {
+      font-size: 1em;
+      padding: 0.5em 1.5em;
+      margin-top: 2em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Wedding Speech Translations</h1>
+  <div class="segment" id="translations">
+    <div class="lang" id="en"></div>
+    <div class="lang" id="fr"></div>
+    <div class="lang" id="gr"></div>
+  </div>
+
+  <button onclick="nextSegment()">Next Segment</button>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const currentRef = db.ref("currentIndex");
+    const segmentsRef = db.ref("segments");
+
+    let segments = [];
+
+    segmentsRef.once("value").then(snapshot => {
+      segments = snapshot.val();
+    });
+
+    currentRef.on("value", snapshot => {
+      const index = snapshot.val();
+      if (segments.length > index) {
+        const s = segments[index];
+        document.getElementById("en").textContent = "🇬🇧 " + s.en;
+        document.getElementById("fr").textContent = "🇫🇷 " + s.fr;
+        document.getElementById("gr").textContent = "🇬🇷 " + s.gr;
+      }
+    });
+
+    function nextSegment() {
+      currentRef.once("value").then(snapshot => {
+        const current = snapshot.val();
+        currentRef.set(current + 1);
+      });
+    }
+  </script>
+</body>
+</html>
