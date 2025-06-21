@@ -43,6 +43,11 @@
       padding: 0.5em;
       margin: 0.3em;
     }
+    .active-speech-btn {
+  background-color: #ffdd57;
+  border: 2px solid #ffaa00;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
@@ -91,7 +96,11 @@
     selectorDiv.innerHTML = "";
     for (const id in speeches) {
       const btn = document.createElement("button");
-      btn.textContent = speeches[id].title || id;
+    btn.textContent = speeches[id].title || id;
+
+    if (id === currentSpeechId) {
+      btn.classList.add("active-speech-btn");
+    }
       btn.onclick = () => {if (isAdmin) {set(currentSpeechRef, id)}else{currentSpeechId=id; updateSpeech()}};
       selectorDiv.appendChild(btn);
     }
@@ -201,8 +210,8 @@
   // Firebase listeners
   onValue(currentSpeechRef, (snapshot) => {
   currentSpeechId = snapshot.val();
-
-  
+    renderSpeechSelector();
+    updateSpeech();
 });
 
 
