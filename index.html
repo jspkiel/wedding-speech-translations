@@ -76,14 +76,14 @@
   const db = getDatabase(app);
   const auth = getAuth(app);
 
-  const speechesRef = ref(db, "speeches");
-  const currentSpeechRef = ref(db, "currentSpeech");
-  const currentIndexRef = ref(db, "currentIndex");
-
-  let speeches = {};
+    let speeches = {};
   let currentSpeechId = null;
   let currentIndex = 0;
   let isAdmin = false;
+
+  const speechesRef = ref(db, "speeches");
+  const currentSpeechRef = ref(db, "currentSpeech");
+  const currentIndexRef = ref(db, `speeches/${currentSpeechId}/currentIndex`);
 
   const translationsDiv = document.getElementById("translations");
   const selectorDiv = document.getElementById("speechSelector");
@@ -103,10 +103,16 @@
     if (!currentSpeechId || !speeches[currentSpeechId]) return;
 
     const segments = speeches[currentSpeechId].segments || [];
-    segments.forEach((seg, index) => {
+    const { segments, currentIndex } = speeches[currentSpeechId];
+    (segments || []).forEach((seg, index) => {
       const segDiv = document.createElement("div");
        
-      segDiv.className = "segment" + (index === currentIndex ? " highlight" : "");
+      segDiv.className = "segment" 
+        // + (index === currentIndex ? " highlight" : "");
+
+      if (index === currentIndex) {
+          segDiv.classList.add("highlight");
+        }
 
       const row = document.createElement("div");
       row.style.display = "flex";
