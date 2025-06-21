@@ -105,7 +105,8 @@
     const segments = speeches[currentSpeechId].segments || [];
     segments.forEach((seg, index) => {
       const segDiv = document.createElement("div");
-      segDiv.className = "segment" + (index === currentIndex ? " current" : "");
+       
+      segDiv.className = "segment" + (index === currentIndex ? " highlight" : "");
 
       const row = document.createElement("div");
       row.style.display = "flex";
