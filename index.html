@@ -36,6 +36,11 @@
   padding: 1em;
   box-shadow: 0 0 10px #e0d97a;
 }
+    .segment.highlight {
+  background-color: #ffffcc; /* light yellow */
+  border-left: 5px solid #f39c12; /* orange accent */
+  padding-left: 1em;
+}
 
   </style>
 </head>
@@ -46,9 +51,10 @@
     <div class="lang" id="fr"></div>
     <div class="lang" id="gr"></div>
   </div>
-  <button onclick="goToCurrent()">Go to Current Segment</button>
 
-  <button id="nextBtn" onclick="nextSegment()" style="display:none;">Next Segment</button>
+
+  <button id="goToCurrentBtn" onclick="goToCurrent()">Go to Current Segment</button>
+
 
   <div id="loginForm">
     <input type="email" id="email" placeholder="Email">
@@ -56,8 +62,7 @@
     <button onclick="login()">Login</button>
     <button onclick="logout()" style="display:none;" id="logoutBtn">Logout</button>
   </div>
-
-    <script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
   import { getDatabase, ref, get, onValue, set } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
@@ -80,8 +85,8 @@
   const segmentsRef = ref(db, "segments");
 
   let segments = [];
+  let isAdmin = false;
 
-  // Function to render all segments with highlighting
   function renderSegments(currentIndex) {
     const container = document.getElementById("translations");
     container.innerHTML = ""; // Clear previous content
@@ -101,8 +106,20 @@
         <div class="lang">🇬🇷 ${s.gr}</div>
       `;
 
+      if (isAdmin) {
+        const btn = document.createElement("button");
+        btn.textContent = "Set as Current";
+        btn.style.marginLeft = "1em";
+        btn.onclick = () => setCurrent(i);
+        segmentDiv.appendChild(btn);
+      }
+
       container.appendChild(segmentDiv);
     });
+  }
+
+  function setCurrent(index) {
+    set(currentRef, index);
   }
 
   // Load segments once, then subscribe to currentIndex changes
@@ -122,15 +139,6 @@
     });
   });
 
-  window.nextSegment = function () {
-    get(currentRef).then(snapshot => {
-      const current = snapshot.val() || 0;
-      if (current < segments.length - 1) {
-        set(currentRef, current + 1);
-      }
-    });
-  };
-
   window.goToCurrent = function () {
     get(currentRef).then(snapshot => {
       const current = snapshot.val() || 0;
@@ -147,8 +155,8 @@
 
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
-        document.getElementById("nextBtn").style.display = "inline-block";
-        document.getElementById("logoutBtn").style.display = "inline-block";
+        isAdmin = true;
+        renderSegmentsOnAuthChange();
       })
       .catch(error => {
         alert("Login failed: " + error.message);
@@ -157,21 +165,31 @@
 
   window.logout = function () {
     signOut(auth).then(() => {
-      document.getElementById("nextBtn").style.display = "none";
-      document.getElementById("logoutBtn").style.display = "none";
+      isAdmin = false;
+      renderSegmentsOnAuthChange();
     });
   };
 
+  function renderSegmentsOnAuthChange() {
+    get(currentRef).then(snapshot => {
+      const index = snapshot.val() || 0;
+      renderSegments(index);
+    });
+
+    // Show or hide logout button
+    document.getElementById("logoutBtn").style.display = isAdmin ? "inline-block" : "none";
+    // Show or hide login inputs
+    document.getElementById("email").style.display = isAdmin ? "none" : "inline-block";
+    document.getElementById("password").style.display = isAdmin ? "none" : "inline-block";
+    document.querySelector("#loginForm button[onclick='login()']").style.display = isAdmin ? "none" : "inline-block";
+  }
+
   onAuthStateChanged(auth, user => {
-    if (user) {
-      document.getElementById("nextBtn").style.display = "inline-block";
-      document.getElementById("logoutBtn").style.display = "inline-block";
-    } else {
-      document.getElementById("nextBtn").style.display = "none";
-      document.getElementById("logoutBtn").style.display = "none";
-    }
+    isAdmin = !!user;
+    renderSegmentsOnAuthChange();
   });
 </script>
+
 
 </body>
 </html>
