@@ -183,10 +183,24 @@
 
   // Firebase listeners
   onValue(currentSpeechRef, (snapshot) => {
-    currentSpeechId = snapshot.val();
-    listenCurrentIndex()
+  currentSpeechId = snapshot.val();
+
+  // Wait until speeches are loaded before setting listener
+  if (speeches[currentSpeechId]) {
+    listenCurrentIndex();
     renderSegments();
-  });
+  } else {
+    // Retry once speeches are loaded
+    const interval = setInterval(() => {
+      if (speeches[currentSpeechId]) {
+        listenCurrentIndex();
+        renderSegments();
+        clearInterval(interval);
+      }
+    }, 100);
+  }
+});
+
 
     
 
