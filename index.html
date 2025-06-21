@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Wedding Speech Translations</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
   <style>
     body {
       font-family: sans-serif;
@@ -36,19 +35,25 @@
 
   <button onclick="nextSegment()">Next Segment</button>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHOidOsQb0-zR-Qb6Y9xWKVoEw5BrEcyE",
+    authDomain: "wedding-b592d.firebaseapp.com",
+    databaseURL: "https://wedding-b592d-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "wedding-b592d",
+    storageBucket: "wedding-b592d.firebasestorage.app",
+    messagingSenderId: "843999607139",
+    appId: "1:843999607139:web:cf812e65677e1d3eea3b56"
+  };
+
+  // Initialize Firebase
+  const db = initializeApp(firebaseConfig);
 
     const currentRef = db.ref("currentIndex");
     const segmentsRef = db.ref("segments");
