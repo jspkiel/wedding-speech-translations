@@ -46,6 +46,7 @@
     <div class="lang" id="fr"></div>
     <div class="lang" id="gr"></div>
   </div>
+  <button onclick="goToCurrent()">Go to Current Segment</button>
 
   <button id="nextBtn" onclick="nextSegment()" style="display:none;">Next Segment</button>
 
@@ -80,10 +81,10 @@
 
   let segments = [];
 
-  // Render all segments
+  // Function to render all segments with highlighting
   function renderSegments(currentIndex) {
     const container = document.getElementById("translations");
-    container.innerHTML = "";
+    container.innerHTML = ""; // Clear previous content
 
     segments.forEach((s, i) => {
       const segmentDiv = document.createElement("div");
@@ -104,28 +105,35 @@
     });
   }
 
+  // Load segments once, then subscribe to currentIndex changes
   get(segmentsRef).then(snapshot => {
-    segments = snapshot.val();
-    get(currentRef).then(indexSnap => {
-      renderSegments(indexSnap.val());
+    segments = snapshot.val() || [];
+
+    // Initial render, get current index once
+    get(currentRef).then(snapshotIndex => {
+      const index = snapshotIndex.val() || 0;
+      renderSegments(index);
     });
 
+    // Update highlight on currentIndex changes
     onValue(currentRef, snapshot => {
-      const index = snapshot.val();
+      const index = snapshot.val() || 0;
       renderSegments(index);
     });
   });
 
   window.nextSegment = function () {
     get(currentRef).then(snapshot => {
-      const current = snapshot.val();
-      set(currentRef, current + 1);
+      const current = snapshot.val() || 0;
+      if (current < segments.length - 1) {
+        set(currentRef, current + 1);
+      }
     });
   };
 
   window.goToCurrent = function () {
     get(currentRef).then(snapshot => {
-      const current = snapshot.val();
+      const current = snapshot.val() || 0;
       const el = document.getElementById("segment-" + current);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -165,6 +173,5 @@
   });
 </script>
 
-<button onclick="goToCurrent()">Go to Current Segment</button>
 </body>
 </html>
