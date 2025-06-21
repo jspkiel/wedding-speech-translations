@@ -92,7 +92,7 @@
     for (const id in speeches) {
       const btn = document.createElement("button");
       btn.textContent = speeches[id].title || id;
-      btn.onclick = () => {if (isAdmin) {set(currentSpeechRef, id)}else{currentSpeechId=id}};
+      btn.onclick = () => {if (isAdmin) {set(currentSpeechRef, id)}else{currentSpeechId=id; updateSpeech()}};
       selectorDiv.appendChild(btn);
     }
   }
@@ -181,11 +181,8 @@
   });
 }
 
-  // Firebase listeners
-  onValue(currentSpeechRef, (snapshot) => {
-  currentSpeechId = snapshot.val();
-
-  // Wait until speeches are loaded before setting listener
+    const updateSpeech = () => {
+      // Wait until speeches are loaded before setting listener
   if (speeches[currentSpeechId]) {
     listenCurrentIndex();
     renderSegments();
@@ -199,6 +196,13 @@
       }
     }, 100);
   }
+    }
+
+  // Firebase listeners
+  onValue(currentSpeechRef, (snapshot) => {
+  currentSpeechId = snapshot.val();
+
+  
 });
 
 
