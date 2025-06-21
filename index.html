@@ -1,132 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Wedding Speech Translations</title>
-
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2em;
-      background: #fdfaf6;
-    }
-    .segment {
-      font-size: 1.5em;
-      margin-bottom: 2em;
-    }
-    .lang {
-      margin: 1em 0;
-    }
-    button {
-      font-size: 1em;
-      padding: 0.5em 1.5em;
-      margin-top: 2em;
-    }
-    #loginForm {
-      margin-top: 2em;
-    }
-    input {
-      padding: 0.5em;
-      margin: 0.3em;
-    }
-  </style>
-</head>
-<body>
-  <h1>Wedding Speech Translations</h1>
-  <div class="segment" id="translations">
-    <div class="lang" id="en"></div>
-    <div class="lang" id="fr"></div>
-    <div class="lang" id="gr"></div>
-  </div>
-
-  <button id="nextBtn" onclick="nextSegment()" style="display:none;">Next Segment</button>
-
-  <div id="loginForm">
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <button onclick="logout()" style="display:none;" id="logoutBtn">Logout</button>
-  </div>
-
-    <script type="module">
-  // Import the functions you need from the SDKs you need
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  import { getDatabase, ref, get, onValue, set } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
-  // Your web app's Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyCHOidOsQb0-zR-Qb6Y9xWKVoEw5BrEcyE",
     authDomain: "wedding-b592d.firebaseapp.com",
     databaseURL: "https://wedding-b592d-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "wedding-b592d",
-    storageBucket: "wedding-b592d.firebasestorage.app",
+    storageBucket: "wedding-b592d.appspot.com",
     messagingSenderId: "843999607139",
     appId: "1:843999607139:web:cf812e65677e1d3eea3b56"
   };
 
   // Initialize Firebase
-  const db = initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
 
-    const currentRef = db.ref("currentIndex");
-    const segmentsRef = db.ref("segments");
+  const currentRef = ref(db, "currentIndex");
+  const segmentsRef = ref(db, "segments");
 
-    let segments = [];
+  let segments = [];
 
-    segmentsRef.once("value").then(snapshot => {
-      segments = snapshot.val();
+  get(segmentsRef).then(snapshot => {
+    segments = snapshot.val();
+  });
+
+  onValue(currentRef, snapshot => {
+    const index = snapshot.val();
+    if (segments.length > index) {
+      const s = segments[index];
+      document.getElementById("en").textContent = "🇬🇧 " + s.en;
+      document.getElementById("fr").textContent = "🇫🇷 " + s.fr;
+      document.getElementById("gr").textContent = "🇬🇷 " + s.gr;
+    }
+  });
+
+  window.nextSegment = function () {
+    get(currentRef).then(snapshot => {
+      const current = snapshot.val();
+      set(currentRef, current + 1);
     });
+  };
 
-    currentRef.on("value", snapshot => {
-      const index = snapshot.val();
-      if (segments.length > index) {
-        const s = segments[index];
-        document.getElementById("en").textContent = "🇬🇧 " + s.en;
-        document.getElementById("fr").textContent = "🇫🇷 " + s.fr;
-        document.getElementById("gr").textContent = "🇬🇷 " + s.gr;
-      }
-    });
+  window.login = function () {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-    function nextSegment() {
-      currentRef.once("value").then(snapshot => {
-        const current = snapshot.val();
-        currentRef.set(current + 1);
-      });
-    }
-
-    function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          document.getElementById("nextBtn").style.display = "inline-block";
-          document.getElementById("logoutBtn").style.display = "inline-block";
-        })
-        .catch(error => {
-          alert("Login failed: " + error.message);
-        });
-    }
-
-    function logout() {
-      auth.signOut().then(() => {
-        document.getElementById("nextBtn").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "none";
-      });
-    }
-
-    auth.onAuthStateChanged(user => {
-      if (user) {
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
         document.getElementById("nextBtn").style.display = "inline-block";
         document.getElementById("logoutBtn").style.display = "inline-block";
-      } else {
-        document.getElementById("nextBtn").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "none";
-      }
+      })
+      .catch(error => {
+        alert("Login failed: " + error.message);
+      });
+  };
+
+  window.logout = function () {
+    signOut(auth).then(() => {
+      document.getElementById("nextBtn").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "none";
     });
-  </script>
-</body>
-</html>
+  };
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      document.getElementById("nextBtn").style.display = "inline-block";
+      document.getElementById("logoutBtn").style.display = "inline-block";
+    } else {
+      document.getElementById("nextBtn").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "none";
+    }
+  });
+</script>
