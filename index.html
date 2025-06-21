@@ -102,8 +102,8 @@
     translationsDiv.innerHTML = "";
     if (!currentSpeechId || !speeches[currentSpeechId]) return;
 
-    const { segments, currentIndex } = speeches[currentSpeechId];
-    (segments || []).forEach((seg, index) => {
+    const segments = speeches[currentSpeechId].segments || [];
+    segments.forEach((seg, index) => {
       const segDiv = document.createElement("div");
        
       segDiv.className = "segment" 
@@ -165,14 +165,7 @@
     translationsDiv.appendChild(goToBtn);
   }
 
-  // Firebase listeners
-  onValue(currentSpeechRef, (snapshot) => {
-    currentSpeechId = snapshot.val();
-    listenCurrentIndex()
-    renderSegments();
-  });
-
-    function listenCurrentIndex() {
+    const listenCurrentIndex = () => {
   
   const currentIndexRef = ref(db, `speeches/${currentSpeechId}/currentIndex`);
   
@@ -184,9 +177,17 @@
   // Attach new listener
   window.currentIndexUnsubscribe = onValue(currentIndexRef, snapshot => {
     currentIndex = snapshot.val();
-    renderSegments();
   });
 }
+
+  // Firebase listeners
+  onValue(currentSpeechRef, (snapshot) => {
+    currentSpeechId = snapshot.val();
+    listenCurrentIndex()
+    renderSegments();
+  });
+
+    
 
   // onValue(currentIndexRef, (snapshot) => {
   //   currentIndex = snapshot.val();
