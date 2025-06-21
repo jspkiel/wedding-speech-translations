@@ -58,123 +58,143 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  import { getDatabase, ref, get, onValue, set } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCHOidOsQb0-zR-Qb6Y9xWKVoEw5BrEcyE",
-      authDomain: "wedding-b592d.firebaseapp.com",
-      databaseURL: "https://wedding-b592d-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "wedding-b592d",
-      storageBucket: "wedding-b592d.appspot.com",
-      messagingSenderId: "843999607139",
-      appId: "1:843999607139:web:cf812e65677e1d3eea3b56"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHOidOsQb0-zR-Qb6Y9xWKVoEw5BrEcyE",
+    authDomain: "wedding-b592d.firebaseapp.com",
+    databaseURL: "https://wedding-b592d-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "wedding-b592d",
+    storageBucket: "wedding-b592d.appspot.com",
+    messagingSenderId: "843999607139",
+    appId: "1:843999607139:web:cf812e65677e1d3eea3b56"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
 
-    const speechesRef = ref(db, "speeches");
-    const currentSpeechRef = ref(db, "currentSpeech");
-    const currentIndexRef = ref(db, "currentIndex");
+  const speechesRef = ref(db, "speeches");
+  const currentSpeechRef = ref(db, "currentSpeech");
+  const currentIndexRef = ref(db, "currentIndex");
 
-    let speeches = {};
-    let currentSpeech = null;
-    let currentIndex = 0;
-    let isAdmin = false;
+  let speeches = {};
+  let currentSpeechId = null;
+  let currentIndex = 0;
+  let isAdmin = false;
 
-    onValue(speechesRef, snapshot => {
-      speeches = snapshot.val() || {};
-      renderSpeechSelector();
-      renderSegments();
-    });
+  const translationsDiv = document.getElementById("translations");
+  const selectorDiv = document.getElementById("speechSelector");
 
-    onValue(currentSpeechRef, snapshot => {
-      currentSpeech = snapshot.val();
-      renderSegments();
-    });
+  function renderSpeechSelector() {
+    selectorDiv.innerHTML = "";
+    for (const id in speeches) {
+      const btn = document.createElement("button");
+      btn.textContent = speeches[id].title || id;
+      btn.onclick = () => set(currentSpeechRef, id);
+      selectorDiv.appendChild(btn);
+    }
+  }
 
-    onValue(currentIndexRef, snapshot => {
-      currentIndex = snapshot.val();
-      renderSegments();
-    });
+  function renderSegments() {
+    translationsDiv.innerHTML = "";
+    if (!currentSpeechId || !speeches[currentSpeechId]) return;
 
-    function renderSpeechSelector() {
-      const selector = document.getElementById("speechSelector");
-      console.log("Speeches:", speeches);
-      selector.innerHTML = "";
-      for (const id in speeches) {
-        const btn = document.createElement("button");
-        btn.textContent = speeches[id].title || id;
-        btn.onclick = () => set(currentSpeechRef, id);
-        selector.appendChild(btn);
+    const segments = speeches[currentSpeechId].segments || [];
+    segments.forEach((seg, index) => {
+      const segDiv = document.createElement("div");
+      segDiv.className = "segment" + (index === currentIndex ? " current" : "");
+
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.justifyContent = "center";
+      row.style.gap = "2em";
+
+      const en = document.createElement("div");
+      en.className = "lang";
+      en.textContent = "🇬🇧 " + seg.en;
+      row.appendChild(en);
+
+      const fr = document.createElement("div");
+      fr.className = "lang";
+      fr.textContent = "🇫🇷 " + seg.fr;
+      row.appendChild(fr);
+
+      const gr = document.createElement("div");
+      gr.className = "lang";
+      gr.textContent = "🇬🇷 " + seg.gr;
+      row.appendChild(gr);
+
+      segDiv.appendChild(row);
+
+      if (isAdmin) {
+        const setBtn = document.createElement("button");
+        setBtn.textContent = "Set as current";
+        setBtn.onclick = () => set(currentIndexRef, index);
+        segDiv.appendChild(setBtn);
       }
-    }
 
-    function renderSegments() {
-      const container = document.getElementById("translations");
-      container.innerHTML = "";
-      if (!currentSpeech || !speeches[currentSpeech]) return;
+      translationsDiv.appendChild(segDiv);
+    });
 
-      const segments = speeches[currentSpeech].segments || [];
-
-      segments.forEach((s, i) => {
-        const div = document.createElement("div");
-        div.className = "segment" + (i === currentIndex ? " highlight" : "");
-
-        const langDiv = document.createElement("div");
-        langDiv.className = "lang-container";
-
-        langDiv.innerHTML = `
-          <div class="lang">🇬🇧 ${s.en}</div>
-          <div class="lang">🇫🇷 ${s.fr}</div>
-          <div class="lang">🇬🇷 ${s.gr}</div>
-        `;
-
-        div.appendChild(langDiv);
-
-        if (isAdmin) {
-          const btn = document.createElement("button");
-          btn.textContent = "Set as Current";
-          btn.onclick = () => {
-            set(currentSpeechRef, currentSpeech);
-            set(currentIndexRef, i);
-          };
-          div.appendChild(btn);
-        }
-
-        container.appendChild(div);
-      });
-    }
-
-    window.login = function () {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          isAdmin = true;
-          document.getElementById("logoutBtn").style.display = "inline-block";
-          renderSegments();
-        })
-        .catch(error => alert("Login failed: " + error.message));
+    const goToBtn = document.createElement("button");
+    goToBtn.textContent = "Go to current";
+    goToBtn.onclick = () => {
+      document.querySelector(".current")?.scrollIntoView({ behavior: "smooth" });
     };
+    translationsDiv.appendChild(goToBtn);
+  }
 
-    window.logout = function () {
-      signOut(auth).then(() => {
-        isAdmin = false;
-        document.getElementById("logoutBtn").style.display = "none";
+  // Firebase listeners
+  onValue(currentSpeechRef, (snapshot) => {
+    currentSpeechId = snapshot.val();
+    renderSegments();
+  });
+
+  onValue(currentIndexRef, (snapshot) => {
+    currentIndex = snapshot.val();
+    renderSegments();
+  });
+
+  get(speechesRef).then(snapshot => {
+    speeches = snapshot.val() || {};
+    console.log("Loaded speeches:", speeches); // ✅ Confirm loading
+    renderSpeechSelector();
+    renderSegments();
+  });
+
+  // Auth
+  window.login = function () {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        isAdmin = true;
+        document.getElementById("logoutBtn").style.display = "inline-block";
         renderSegments();
+      })
+      .catch(error => {
+        alert("Login failed: " + error.message);
       });
-    };
+  };
 
-    onAuthStateChanged(auth, user => {
-      isAdmin = !!user;
-      document.getElementById("logoutBtn").style.display = user ? "inline-block" : "none";
+  window.logout = function () {
+    signOut(auth).then(() => {
+      isAdmin = false;
+      document.getElementById("logoutBtn").style.display = "none";
       renderSegments();
     });
-  </script>
+  };
+
+  onAuthStateChanged(auth, (user) => {
+    isAdmin = !!user;
+    document.getElementById("logoutBtn").style.display = isAdmin ? "inline-block" : "none";
+    renderSegments();
+  });
+</script>
+
 </body>
 </html>
