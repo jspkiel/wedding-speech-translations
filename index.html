@@ -78,6 +78,7 @@
 
     let speeches = {};
   let currentSpeechId = null;
+  let currentIndexUpdated = 0;
   let isAdmin = false;
 
   const speechesRef = ref(db, "speeches");
@@ -103,11 +104,12 @@
     const {segments, currentIndex} = speeches[currentSpeechId];
     (segments || []).forEach((seg, index) => {
       const segDiv = document.createElement("div");
+      const curr = currentIndexUpdated || currentIndex
        
       segDiv.className = "segment" 
         // + (index === currentIndex ? " highlight" : "");
 
-      if (index === currentIndex) {
+      if (index === curr) {
           segDiv.classList.add("highlight");
         }
 
@@ -174,7 +176,7 @@
   
   // Attach new listener
   window.currentIndexUnsubscribe = onValue(currentIndexRef, snapshot => {
-    currentIndex = snapshot.val();
+    currentIndexUpdated = snapshot.val();
   });
 }
 
